@@ -1,4 +1,4 @@
-package org.univlille1.pathimpact;
+package org.univlille1.pathimpact.filter;
 
 import spoon.reflect.code.CtInvocation;
 import spoon.reflect.visitor.Filter;
