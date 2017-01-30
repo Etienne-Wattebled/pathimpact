@@ -1,34 +1,32 @@
 package org.univlille1.pathimpact.grammaire;
 
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.function.Predicate;
 
 import org.univlille1.pathimpact.element.AbstractElement;
 import org.univlille1.pathimpact.element.ElementItf;
 
-import com.google.common.collect.HashBasedTable;
-import com.google.common.collect.Table;
-
 public class Grammaire {
-	protected S s;
+	protected Regle s;
 	protected List<Regle> regles;
 	protected int prochainIdRegle;
-	protected Table<Regle,ElementItf,Integer> utilisationsRegles;
 	
 	public Grammaire() {
 		reset();
 	}
 	
 	protected void reset() {
-		this.s = new S();
+		this.s = new Regle("S");
 		this.regles = new LinkedList<Regle>();
 		this.prochainIdRegle = 0;
-		this.utilisationsRegles = HashBasedTable.create();
 	}
 	
 	/**
@@ -36,8 +34,7 @@ public class Grammaire {
 	 * @param strackTrace de la règle
 	 *
 	 */
-	public Regle ajouterRegle(List<ElementItf> elements) {
-		// to do : mettre à jour utilisationsRegles si nécessaire
+	public Regle ajouterRegle(LinkedList<ElementItf> elements) {
 		String id = String.valueOf(prochainIdRegle);
 		prochainIdRegle = prochainIdRegle + 1;
 		Regle regle = new Regle(elements,id);
@@ -46,38 +43,39 @@ public class Grammaire {
 	}
 	
 	public void supprimerRegle(Regle regle) {
-		regles.remove(regle);
-		Map<ElementItf,Integer> m = utilisationsRegles.row(regle);
-		
-		Map<Regle,Map<ElementItf,Integer>> m2 = utilisationsRegles.rowMap();
-		m2.remove(regle);		
-		
-		Set<ElementItf> elements = m.keySet();
-		for (ElementItf e : elements) {
-			if (e instanceof Regle) {
-				((Regle) e).supprimerElement(regle);
-			}
-			if (e instanceof S) {
-				((S) e).supprimerElement(regle);
+		List<Regle> l = new LinkedList<Regle>(regles);
+		for (Regle r : l) {
+			if (regle != r) {
+				desappliquerRegle(regle,r);
 			}
 		}
+		desappliquerRegleSurS(regle);
+		regles.remove(regle);
 	}
 	
-	public void appliquerRegle(Regle regleAAppliquer, Regle regle) {
+	public int appliquerRegle(Regle regleAAppliquer, Regle regle) {
 		int nb = regleAAppliquer.appliquer(regle.getElements());
-		// to do mettre à jour utilisationsRegles
+		return nb;
 	}
 	
-	public void appliquerRegleSurS(Regle regle) {
-		int nb = regle.appliquer(s.getElements());
-		// to do mettre à jour utilisationsRegles
+	
+	public int desappliquerRegle(Regle regleADesappliquer, Regle regle) {
+		return regleADesappliquer.desappliquer(regle.getElements());
+	}
+	
+	public int appliquerRegleSurS(Regle regle) {
+		return appliquerRegle(regle,s);
+	}
+	
+	public int desappliquerRegleSurS(Regle regle) {
+		return desappliquerRegle(regle,s);
 	}
 	
 	public int getNbRegles() {
 		return regles.size();
 	}
 	
-	public S getS() {
+	public Regle getS() {
 		return s;
 	}
 	
@@ -93,6 +91,36 @@ public class Grammaire {
 		s.supprimerElement(element);
 	}
 	
+	public void simplierRegles() {
+		Map<Regle,Integer> map = new HashMap<Regle,Integer>();
+		for (ElementItf e : s.getElements()) {
+			if (e instanceof Regle) {
+				incrementer(map,(Regle)e);
+			}
+		}
+		for (Regle r : regles) {
+			for (ElementItf e : r.getElements()) {
+				if (e instanceof Regle) {
+					incrementer(map,(Regle)e);
+				}
+			}
+		}
+		for (Entry<Regle,Integer> e : map.entrySet()) {
+			if (e.getValue() < 2) {
+				supprimerRegle(e.getKey());
+			}
+		}
+	}
+	
+	private void incrementer(Map<Regle,Integer> map, Regle element) {
+		Integer i = map.get(element);
+		if (i == null) {
+			map.put(element,1);
+		} else {
+			map.put(element,i+1);
+		}
+	}
+	
 	public Regle getRegleQuiProduit(List<ElementItf> elements) {
 		for (Regle regle : regles) {
 			if (regle.produit(elements)) {
@@ -103,7 +131,7 @@ public class Grammaire {
 	}
 	
 	public void print() {
-		System.out.println("S =");
+		System.out.print("S =");
 		Iterator<ElementItf> itE = s.listIterator();
 		while (itE.hasNext()) {
 			ElementItf element = itE.next();
@@ -121,14 +149,31 @@ public class Grammaire {
 	
 	public class Regle extends AbstractElement {
 		
-		protected List<ElementItf> elements;
+		protected LinkedList<ElementItf> elements;
+	
+		protected Regle(String nom) {
+			super(nom);
+			this.elements = new LinkedList<ElementItf>();
+		}
 		
-		protected Regle(List<ElementItf> elements, String nom) {
+		protected Regle(LinkedList<ElementItf> elements, String nom) {
 			super(nom);
 			this.elements = elements;
 		}
 		
-		public List<ElementItf> getElements() {
+		public ListIterator<ElementItf> getListIteratorEnd() {
+			return elements.listIterator(elements.size());
+		}
+		
+		protected ListIterator<ElementItf> listIterator() {
+			return this.elements.listIterator();
+		}
+		
+		public ElementItf getLastElement() {
+			return elements.getLast();
+		}
+		
+		protected List<ElementItf> getElements() {
 			return this.elements;
 		}
 		public int getNbElements() {
@@ -159,6 +204,7 @@ public class Grammaire {
 				System.out.print(" ");
 				System.out.print(it.next());
 			}
+			System.out.print("\n");
 		}
 		
 		public boolean contientElement(ElementItf element) {
@@ -188,7 +234,7 @@ public class Grammaire {
 				element = it.next();
 				if (element == this) {
 					it.remove();
-					for (ElementItf e : elements) {
+					for (ElementItf e : this.elements) {
 						it.add(e);
 					}
 					nb = nb+1;
@@ -230,6 +276,8 @@ public class Grammaire {
 							}
 						}
 						if (ok) {
+							itE.previous();
+							itE.remove();
 							itE.add(this);
 							nb = nb+1;
 						}
@@ -237,30 +285,6 @@ public class Grammaire {
 				}
 			}
 			return nb;
-		}
-	}
-	
-	protected class S extends AbstractElement {
-		private List<ElementItf> elements;
-		
-		protected S() {
-			super("S");
-		}
-		
-		protected void ajouterElement(ElementItf element) {
-			elements.add(element);
-		}
-		
-		protected void supprimerElement(ElementItf element) {
-			elements.removeIf(new PredicateSameInstance(element));
-		}
-		
-		protected List<ElementItf> getElements() {
-			return elements;
-		}
-		
-		protected ListIterator<ElementItf> listIterator() {
-			return elements.listIterator();
 		}
 	}
 	

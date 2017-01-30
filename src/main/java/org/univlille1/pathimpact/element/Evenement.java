@@ -18,4 +18,9 @@ public enum Evenement implements ElementItf {
 	public String toString() {
 		return nom;
 	}
+	
+	@Override
+	public void print() {
+		System.out.println(nom);
+	}
 }

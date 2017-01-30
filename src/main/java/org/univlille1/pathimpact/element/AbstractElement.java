@@ -16,4 +16,9 @@ public abstract class AbstractElement implements ElementItf {
 	public String toString() {
 		return nom;
 	}
+	
+	@Override
+	public void print() {
+		System.out.println(nom);
+	}
 }
