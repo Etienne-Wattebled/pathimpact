@@ -22,17 +22,16 @@ public class App {
 
 	public static void main(String args[]) throws InterruptedException {
 		Options options = new Options();
-		options.addOption("projectName",true,"Nom du répertoire du projet dans le dossier input.");
+		options.addOption("projectPath",true,"Chemin du projet dans le dossier input. ( exemple: input/test )");
 		CommandLineParser parser = new DefaultParser();
 		try {
 			CommandLine cmd = parser.parse(options, args);
-			if (cmd.hasOption("projectName")) {
-				
+			if (cmd.hasOption("projectPath")) {
 				Launcher l = new Launcher();
 				StackTracesProcessor p = new StackTracesProcessor();
 				l.addProcessor(p);
 				l.run(new String[] {
-					"-i",new StringBuilder().append("input").append(File.separator).append(cmd.getOptionValue("projectName")).append(File.separator).append(srcMainJava).toString(),
+					"-i",new StringBuilder().append(cmd.getOptionValue("projectPath")).append(File.separator).append(srcMainJava).toString(),
 					"--output-type", "nooutput",
 					"--no-copy-resources"
 				});
@@ -40,13 +39,14 @@ public class App {
 				Sequitur sequitur = new Sequitur(st);
 				Grammaire grammaire = sequitur.executerSequitur();
 				grammaire.print();
-			} else {
-				HelpFormatter formatter = new HelpFormatter();
-				formatter.printHelp("List of parameters", options);
-				System.exit(0);
 			}
 		} catch (ParseException pe) {
-			
+			erreur(options);
 		}
+	}
+	public static void erreur(Options options) {
+		HelpFormatter formatter = new HelpFormatter();
+		formatter.printHelp("List of parameters", options);
+		System.exit(0);
 	}
 }
