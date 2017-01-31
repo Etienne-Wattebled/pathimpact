@@ -131,14 +131,14 @@ public class Grammaire {
 	}
 	
 	public void print() {
-		System.out.print("S =");
+		System.out.print("S = ");
 		Iterator<ElementItf> itE = s.listIterator();
 		while (itE.hasNext()) {
 			ElementItf element = itE.next();
 			System.out.print(element.getNom());
 			System.out.print(" ");
 		}
-		System.out.println("R = {");
+		System.out.println("\nR = {");
 		Iterator<Regle> itR = regles.listIterator();
 		while (itR.hasNext()) {
 			Regle regle = itR.next();
