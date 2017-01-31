@@ -41,12 +41,9 @@ public class App {
 				grammaire.print();
 			}
 		} catch (ParseException pe) {
-			erreur(options);
+			HelpFormatter formatter = new HelpFormatter();
+			formatter.printHelp("List of parameters", options);
+			System.exit(0);
 		}
-	}
-	public static void erreur(Options options) {
-		HelpFormatter formatter = new HelpFormatter();
-		formatter.printHelp("List of parameters", options);
-		System.exit(0);
 	}
 }
