@@ -22,7 +22,7 @@ public class App {
 
 	public static void main(String args[]) throws InterruptedException {
 		Options options = new Options();
-		options.addOption("projectPath",true,"Chemin du projet dans le dossier input. ( exemple: input/test )");
+		options.addOption("projectPath",true,"Chemin du projet. ( exemple: input/test )");
 		CommandLineParser parser = new DefaultParser();
 		try {
 			CommandLine cmd = parser.parse(options, args);
