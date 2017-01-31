@@ -1,5 +1,6 @@
 package org.univlille1.pathimpact.grammaire;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -54,13 +55,12 @@ public class Grammaire {
 	}
 	
 	public int appliquerRegle(Regle regleAAppliquer, Regle regle) {
-		int nb = regleAAppliquer.appliquer(regle.getElements());
-		return nb;
+		return regleAAppliquer.appliquer(regle.getElementsListeModifiable());
 	}
 	
 	
 	public int desappliquerRegle(Regle regleADesappliquer, Regle regle) {
-		return regleADesappliquer.desappliquer(regle.getElements());
+		return regleADesappliquer.desappliquer(regle.getElementsListeModifiable());
 	}
 	
 	public int appliquerRegleSurS(Regle regle) {
@@ -162,20 +162,25 @@ public class Grammaire {
 		}
 		
 		public ListIterator<ElementItf> getListIteratorEnd() {
-			return elements.listIterator(elements.size());
+			return Collections.unmodifiableList(elements).listIterator(elements.size());
 		}
 		
-		protected ListIterator<ElementItf> listIterator() {
-			return this.elements.listIterator();
+		public ListIterator<ElementItf> listIterator() {
+			return Collections.unmodifiableList(elements).listIterator();
 		}
 		
 		public ElementItf getLastElement() {
 			return elements.getLast();
 		}
 		
-		protected List<ElementItf> getElements() {
+		protected List<ElementItf> getElementsListeModifiable() {
 			return this.elements;
 		}
+		
+		public List<ElementItf> getElements() {
+			return Collections.unmodifiableList(this.elements);
+		}
+		
 		public int getNbElements() {
 			return elements.size();
 		}

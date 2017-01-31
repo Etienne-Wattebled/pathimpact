@@ -11,11 +11,11 @@ import org.univlille1.pathimpact.grammaire.Grammaire.Regle;
 public class Sequitur {
 	private List<ElementItf> stacktrace;
 	private Grammaire grammaire;
-	
+
 	public Sequitur(List<ElementItf> elements) {
 		stacktrace = new LinkedList<ElementItf>(elements);
 	}
-		
+
 	public Grammaire executerSequitur() {
 		if (grammaire != null) {
 			return grammaire;
@@ -27,36 +27,33 @@ public class Sequitur {
 		grammaire.ajouterElementDansS(before);
 		stacktrace.remove(0);
 		for (ElementItf element : stacktrace) {
-			LinkedList<ElementItf> lR = new LinkedList<ElementItf>();
-			lR.add(last);
-			lR.add(element);
 			grammaire.ajouterElementDansS(element);
-			Regle r = grammaire.getRegleQuiProduit(lR);
-			if (r != null) {
-				grammaire.appliquerRegleSurS(r);
-			} else {
-				int nb = 2;
-				while (nb >= 2) {
-					ListIterator<ElementItf> it = grammaire.getS().getListIteratorEnd();
-					if (it.hasPrevious()) {
-						last = it.previous();
-					} else {
-						break;
-					}
-					if (it.hasPrevious()) {
-						last2 = it.previous();
-					} else {
-						break;
-					}
-					lR = new LinkedList<ElementItf>();
-					lR.add(last2);
-					lR.add(last);
+			int nb = 2;
+			while (nb >= 2) {
+				ListIterator<ElementItf> it = grammaire.getS().getListIteratorEnd();
+				if (it.hasPrevious()) {
+					last = it.previous();
+				} else {
+					break;
+				}
+				if (it.hasPrevious()) {
+					last2 = it.previous();
+				} else {
+					break;
+				}
+				LinkedList<ElementItf> lR = new LinkedList<ElementItf>();
+				lR.add(last2);
+				lR.add(last);
+				Regle r = grammaire.getRegleQuiProduit(lR);
+				if (r == null) {
 					r = grammaire.ajouterRegle(lR);
 					nb = grammaire.appliquerRegleSurS(r);
-					grammaire.simplierRegles();
+				} else {
+					// La règle existe, il ne faut surtout pas mettre à jour nb et tester la compression davantage si on peut.
+					grammaire.appliquerRegleSurS(r);
 				}
 			}
-			last = grammaire.getS().getLastElement();
+			grammaire.simplierRegles();
 		}
 		return grammaire;
 	}
