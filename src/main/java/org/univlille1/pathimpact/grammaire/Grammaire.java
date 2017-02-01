@@ -2,12 +2,14 @@ package org.univlille1.pathimpact.grammaire;
 
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.function.Predicate;
 
 import org.univlille1.pathimpact.element.AbstractElement;
@@ -91,15 +93,18 @@ public class Grammaire {
 	
 	public void simplierRegles() {
 		Map<Regle,Integer> map = new HashMap<Regle,Integer>();
+		Set<Regle> reglesNonUtilisees = new HashSet<Regle>(regles);
 		for (ElementItf e : s.getElements()) {
 			if (e instanceof Regle) {
 				incrementer(map,(Regle)e);
+				reglesNonUtilisees.remove((Regle)e);
 			}
 		}
 		for (Regle r : regles) {
 			for (ElementItf e : r.getElements()) {
 				if (e instanceof Regle) {
 					incrementer(map,(Regle)e);
+					reglesNonUtilisees.remove((Regle)e);
 				}
 			}
 		}
@@ -107,6 +112,10 @@ public class Grammaire {
 			if (e.getValue() < 2) {
 				supprimerRegle(e.getKey());
 			}
+		}
+		for (Regle regle : reglesNonUtilisees) {
+			// La règle n'est pas utilisée, cela ne sert à rien de la désappliquer
+			regles.remove(regle);
 		}
 	}
 	
@@ -171,7 +180,7 @@ public class Grammaire {
 			return elements.getLast();
 		}
 		
-		protected List<ElementItf> getElementsListeModifiable() {
+		private List<ElementItf> getElementsListeModifiable() {
 			return this.elements;
 		}
 		
@@ -272,10 +281,9 @@ public class Grammaire {
 					boolean ok = (n == this.elements.size());
 					if (n != 0) {
 						while (itE.previousIndex() != rollback) {
+							itE.previous();
 							if (ok) {
 								itE.remove();
-							} else {
-								itE.previous();
 							}
 						}
 						if (ok) {

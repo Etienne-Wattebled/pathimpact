@@ -16,6 +16,7 @@ import org.univlille1.pathimpact.grammaire.Grammaire.Regle;
 public class SequiturTest {
 	@Test
 	public void testSequitur1() {
+		// CF https://courses.cs.washington.edu/courses/csep590a/07au/lectures/lecture05small.pdf
 		List<ElementItf> elements = new LinkedList<ElementItf>();
 		Methode b = new Methode("b");
 		Methode e = new Methode("e");
@@ -77,6 +78,7 @@ public class SequiturTest {
 
 	@Test
 	public void testSequitur2() {
+		// CF http://www.cc.gatech.edu/~orso/papers/orso.term.harrold.ICSE04.pdf
 		Methode m = new Methode("M");
 		Methode b = new Methode("B");
 		Methode g = new Methode("G");
