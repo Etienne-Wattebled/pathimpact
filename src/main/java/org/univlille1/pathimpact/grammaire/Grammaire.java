@@ -2,14 +2,12 @@ package org.univlille1.pathimpact.grammaire;
 
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Set;
 import java.util.function.Predicate;
 
 import org.univlille1.pathimpact.element.AbstractElement;
@@ -80,7 +78,7 @@ public class Grammaire {
 	}
 	
 	public List<Regle> getRegles() {
-		return regles;
+		return Collections.unmodifiableList(regles);
 	}
 	
 	public void ajouterElementDansS(ElementItf element) {
