@@ -52,8 +52,8 @@ public class Sequitur {
 					// La règle existe, il ne faut surtout pas mettre à jour nb et tester la compression davantage si on peut.
 					grammaire.appliquerRegleSurS(r);
 				}
+				grammaire.simplierRegles();
 			}
-			grammaire.simplierRegles();
 		}
 		return grammaire;
 	}

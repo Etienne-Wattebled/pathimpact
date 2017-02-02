@@ -4,8 +4,6 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
 
 import org.univlille1.pathimpact.element.ElementItf;
 import org.univlille1.pathimpact.element.Evenement;
@@ -38,6 +36,14 @@ public class StackTracesProcessor extends AbstractProcessor<CtMethod<?>> {
 		mapMethodes = new HashMap<String,Methode>();
 	}
 
+	@Override
+	public boolean isToBeProcessed(CtMethod<?> candidate) {
+		if (candidate.getBody() == null) {
+			return false;
+		}
+		return true;
+	}
+	
 	@Override
 	public void process(CtMethod<?> method) {
 		if (method.getSimpleName().equals("main") && method.hasModifier(ModifierKind.STATIC)) {
@@ -91,9 +97,14 @@ public class StackTracesProcessor extends AbstractProcessor<CtMethod<?>> {
 					methode = new Methode(ref);
 					mapMethodes.put(ref,methode);
 				}
-				path.add(methode);
-				construireStackTrace(m,path);
-				path.removeLast();
+				if (path.contains(methode)) {
+					stackTrace.add(methode);
+					stackTrace.add(Evenement.RETURN);
+				} else {
+					path.add(methode);
+					construireStackTrace(m,path);
+					path.removeLast();
+				}
 			}
 		} else {
 			stackTrace.addAll(path);
