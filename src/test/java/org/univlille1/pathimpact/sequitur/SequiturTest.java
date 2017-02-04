@@ -79,6 +79,8 @@ public class SequiturTest {
 	@Test
 	public void testSequitur2() {
 		// CF http://www.cc.gatech.edu/~orso/papers/orso.term.harrold.ICSE04.pdf
+		// Attention : La règle qui produit CEr est une règle supplémentaire au document
+		// D'après ce site : http://www.sequitur.info/ on obtient bien la règle qui produit CEr car ce trigramme est en doublon
 		Methode m = new Methode("M");
 		Methode b = new Methode("B");
 		Methode g = new Methode("G");
@@ -151,8 +153,8 @@ public class SequiturTest {
 
 		Sequitur sequitur = new Sequitur(l);
 		Grammaire grammaire = sequitur.executerSequitur();
-
-		assertEquals(8, grammaire.getNbRegles());
+		
+		assertEquals(9, grammaire.getNbRegles());
 
 		LinkedList<ElementItf> expected = new LinkedList<ElementItf>();
 
@@ -173,41 +175,44 @@ public class SequiturTest {
 		expected.add(Evenement.RETURN);
 		Regle regle3 = grammaire.getRegleQuiProduit(expected);
 
-		// regle4 = A C E r
+		// regle4 = C E r 
 		expected.clear();
-		expected.add(a);
 		expected.add(c);
 		expected.add(e);
 		expected.add(Evenement.RETURN);
-		Regle regle4 = grammaire.getRegleQuiProduit(expected);
+		Regle regle4 =  grammaire.getRegleQuiProduit(expected);
+		
+		// regle5 = A regle4
+		expected.clear();
+		expected.add(a);
+		expected.add(regle4);
+		Regle regle5 = grammaire.getRegleQuiProduit(expected);
 
-		// regle5 = r r
+		// regle6 = r r
 		expected.clear();
 		expected.add(Evenement.RETURN);
 		expected.add(Evenement.RETURN);
-		Regle regle5 = grammaire.getRegleQuiProduit(expected);
+		Regle regle6 = grammaire.getRegleQuiProduit(expected);
 
-		// regle6 = x M
+		// regle7 = x M
 		expected.clear();
 		expected.add(Evenement.END_OF_PROGRAM);
 		expected.add(m);
-		Regle regle6 = grammaire.getRegleQuiProduit(expected);
-
-		// regle7 = D regle5
-		expected.clear();
-		expected.add(d);
-		expected.add(regle5);
 		Regle regle7 = grammaire.getRegleQuiProduit(expected);
 
-		// regle8 = C E r F r regle7
+		// regle8 = D regle6
 		expected.clear();
-		expected.add(c);
-		expected.add(e);
-		expected.add(Evenement.RETURN);
+		expected.add(d);
+		expected.add(regle6);
+		Regle regle8 = grammaire.getRegleQuiProduit(expected);
+
+		// regle9 = regle4 F r regle8
+		expected.clear();
+		expected.add(regle4);
 		expected.add(f);
 		expected.add(Evenement.RETURN);
-		expected.add(regle7);
-		Regle regle8 = grammaire.getRegleQuiProduit(expected);
+		expected.add(regle8);
+		Regle regle9 = grammaire.getRegleQuiProduit(expected);
 		
 		assertNotNull(regle1);
 		assertNotNull(regle2);
@@ -217,6 +222,7 @@ public class SequiturTest {
 		assertNotNull(regle6);
 		assertNotNull(regle7);
 		assertNotNull(regle8);
+		assertNotNull(regle9);
 		
 		// On vérifie S
 		assertEquals(20,grammaire.getS().getNbElements());
@@ -224,21 +230,21 @@ public class SequiturTest {
 		assertEquals(regle2,it.next());
 		assertEquals(regle1,it.next());
 		assertEquals(regle3,it.next());
-		assertEquals(regle4,it.next());
 		assertEquals(regle5,it.next());
+		assertEquals(regle6,it.next());
 		assertEquals(Evenement.END_OF_PROGRAM,it.next());
 		assertEquals(regle2,it.next());
 		assertEquals(c,it.next());
 		assertEquals(Evenement.RETURN,it.next());
 		assertEquals(regle3,it.next());
-		assertEquals(regle6,it.next());
-		assertEquals(regle4,it.next());
 		assertEquals(regle7,it.next());
+		assertEquals(regle5,it.next());
+		assertEquals(regle8,it.next());
 		assertEquals(Evenement.RETURN,it.next());
-		assertEquals(regle6,it.next());
+		assertEquals(regle7,it.next());
 		assertEquals(b,it.next());
-		assertEquals(regle8,it.next());
-		assertEquals(regle8,it.next());
+		assertEquals(regle9,it.next());
+		assertEquals(regle9,it.next());
 		assertEquals(Evenement.RETURN,it.next());
 		assertEquals(Evenement.END_OF_PROGRAM,it.next());
 	}

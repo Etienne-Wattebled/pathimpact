@@ -46,16 +46,33 @@ public class Grammaire {
 	}
 
 	public void supprimerRegle(Regle regle) {
-		List<Regle> l = new LinkedList<Regle>(regles);
-		for (Regle r : l) {
-			if (regle != r) {
-				desappliquerRegle(regle, r);
-			}
-		}
-		desappliquerRegleSurS(regle);
+		desappliquerRegleSurGrammaire(regle);
 		regles.remove(regle);
 	}
 
+	public int appliquerRegleSurGrammaire(Regle regle) {
+		int nb = 0;
+		nb = nb + appliquerRegleSurS(regle);
+		for (Regle r : regles) {
+			if (regle != r) {
+				nb = nb + appliquerRegle(regle, r);
+			}
+		}
+		return nb;
+	}
+	
+	public int desappliquerRegleSurGrammaire(Regle regle) {
+		int nb = 0;
+		nb = nb + desappliquerRegleSurS(regle);
+		for (Regle r : regles) {
+			if (regle != r) {
+				nb = nb + desappliquerRegle(regle, r);
+			}
+		}
+		return nb;
+	}
+	
+	
 	public int appliquerRegle(Regle regleAAppliquer, Regle regle) {
 		return regleAAppliquer.appliquer(regle.getElementsListeModifiable());
 	}
@@ -116,8 +133,7 @@ public class Grammaire {
 		}
 
 		for (Regle regle : reglesNonUtilisees) {
-			// La règle n'est pas utilisée, cela ne sert à rien de la
-			// désappliquer
+			// La règle n'est pas utilisée, cela ne sert à rien de la désappliquer
 			regles.remove(regle);
 		}
 	}
@@ -141,17 +157,9 @@ public class Grammaire {
 	}
 
 	public void print() {
-		System.out.print("S = ");
-		Iterator<ElementItf> itE = s.listIterator();
-		while (itE.hasNext()) {
-			ElementItf element = itE.next();
-			System.out.print(element.getNom());
-			System.out.print(" ");
-		}
-		System.out.println("\nR = {");
-		Iterator<Regle> itR = regles.listIterator();
-		while (itR.hasNext()) {
-			Regle regle = itR.next();
+		s.print();
+		System.out.println("R = {");
+		for (Regle regle : regles) {
 			regle.print();
 		}
 		System.out.println("}");

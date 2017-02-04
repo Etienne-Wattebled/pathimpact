@@ -47,10 +47,10 @@ public class Sequitur {
 				Regle r = grammaire.getRegleQuiProduit(lR);
 				if (r == null) {
 					r = grammaire.ajouterRegle(lR);
-					nb = grammaire.appliquerRegleSurS(r);
+					nb = grammaire.appliquerRegleSurGrammaire(r);
 				} else {
 					// La règle existe, il ne faut surtout pas mettre à jour nb et tester la compression davantage si on peut.
-					grammaire.appliquerRegleSurS(r);
+					grammaire.appliquerRegleSurGrammaire(r);
 				}
 				grammaire.simplierRegles();
 			}
