@@ -20,20 +20,20 @@ import spoon.reflect.reference.CtArrayTypeReference;
 import spoon.reflect.reference.CtTypeReference;
 
 public class StackTracesProcessor extends AbstractProcessor<CtMethod<?>> {
-	
-	private Map<CtMethod<?>,List<CtMethod<?>>> linksBetweenMethods;
-	
+
+	private Map<CtMethod<?>, List<CtMethod<?>>> linksBetweenMethods;
+
 	private List<CtMethod<?>> mainMethods;
-	
+
 	private List<ElementItf> stackTrace;
 
-	private Map<String,Methode> mapMethodes;
-	
+	private Map<String, Methode> mapMethodes;
+
 	public StackTracesProcessor() {
-		linksBetweenMethods = new HashMap<CtMethod<?>,List<CtMethod<?>>>();
+		linksBetweenMethods = new HashMap<CtMethod<?>, List<CtMethod<?>>>();
 		mainMethods = new LinkedList<CtMethod<?>>();
 		stackTrace = new LinkedList<ElementItf>();
-		mapMethodes = new HashMap<String,Methode>();
+		mapMethodes = new HashMap<String, Methode>();
 	}
 
 	@Override
@@ -43,7 +43,7 @@ public class StackTracesProcessor extends AbstractProcessor<CtMethod<?>> {
 		}
 		return true;
 	}
-	
+
 	@Override
 	public void process(CtMethod<?> method) {
 		if (method.getSimpleName().equals("main") && method.hasModifier(ModifierKind.STATIC)) {
@@ -56,7 +56,7 @@ public class StackTracesProcessor extends AbstractProcessor<CtMethod<?>> {
 				}
 			}
 		}
-		
+
 		List<CtInvocation<?>> invocations = method.getBody().getElements(new CtInvocationFilter());
 		for (CtInvocation<?> invoc : invocations) {
 			CtExecutable<?> c = invoc.getExecutable().getDeclaration();
@@ -67,26 +67,27 @@ public class StackTracesProcessor extends AbstractProcessor<CtMethod<?>> {
 					l = linksBetweenMethods.get(method);
 				} else {
 					l = new LinkedList<CtMethod<?>>();
-					linksBetweenMethods.put(method,l);
+					linksBetweenMethods.put(method, l);
 				}
 				l.add(m);
 			}
 		}
 	}
-	
+
 	@Override
 	public void processingDone() {
 		if (mainMethods.size() == 1) {
 			CtMethod<?> method = mainMethods.get(0);
 			LinkedList<ElementItf> path = new LinkedList<ElementItf>();
-			path.add(new Methode(method.getReference().toString()));
+			mapMethodes.put(method.getReference().toString(),new Methode(method.getReference().toString()));
+			path.add(mapMethodes.get(method.getReference().toString()));
 			construireStackTrace(method, path);
 		} else {
 			System.err.println("Erreur: Il ne doit y avoir qu'une seule méthode main.");
 			System.exit(0);
 		}
 	}
-	
+
 	private void construireStackTrace(CtMethod<?> method, LinkedList<ElementItf> path) {
 		List<CtMethod<?>> methods = linksBetweenMethods.get(method);
 		if (methods != null && !methods.isEmpty()) {
@@ -95,27 +96,34 @@ public class StackTracesProcessor extends AbstractProcessor<CtMethod<?>> {
 				Methode methode = mapMethodes.get(ref);
 				if (methode == null) {
 					methode = new Methode(ref);
-					mapMethodes.put(ref,methode);
+					mapMethodes.put(ref, methode);
 				}
-				if (path.contains(methode)) {
-					stackTrace.add(methode);
-					stackTrace.add(Evenement.RETURN);
+				boolean boucle = path.contains(methode);
+				
+				path.add(methode);
+				if (boucle) {
+					// Boucle détectée, on stoppe la stacktrace
+					finStacktrace(path);
 				} else {
-					path.add(methode);
-					construireStackTrace(m,path);
-					path.removeLast();
+					construireStackTrace(m, path);
 				}
+				path.removeLast();
 			}
 		} else {
-			stackTrace.addAll(path);
-			int nb = path.size();
-			for (int i =1;i<=nb;i++) {
-				stackTrace.add(Evenement.RETURN);
-			}
-			stackTrace.add(Evenement.END_OF_PROGRAM);
+			// Il s'agit d'une feuille, on stoppe la stacktrace
+			finStacktrace(path);
 		}
 	}
-	
+
+	private void finStacktrace(LinkedList<ElementItf> path) {
+		stackTrace.addAll(path);
+		int nb = path.size();
+		for (int i = 1; i <= nb; i++) {
+			stackTrace.add(Evenement.RETURN);
+		}
+		stackTrace.add(Evenement.END_OF_PROGRAM);
+	}
+
 	public List<ElementItf> getStackTrace() {
 		return stackTrace;
 	}
