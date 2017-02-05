@@ -248,4 +248,82 @@ public class SequiturTest {
 		assertEquals(Evenement.RETURN,it.next());
 		assertEquals(Evenement.END_OF_PROGRAM,it.next());
 	}
+	
+	@Test
+	public void testSequitur3() {
+		//M B r A C D r E r r r r x M B G r r r x M B C F r r r r x
+		// CF https://cse.unl.edu/~grother/papers/issre03.pdf
+		Methode m = new Methode("M");
+		Methode b = new Methode("B");
+		Methode a = new Methode("A");
+		Methode c = new Methode("C");
+		Methode d = new Methode("D");
+		Methode e = new Methode("E");
+		Methode f = new Methode("F");
+		Methode g = new Methode("G");
+		
+		LinkedList<ElementItf> elements = new LinkedList<ElementItf>();
+		elements.add(m);
+		elements.add(b);
+		elements.add(Evenement.RETURN);
+		elements.add(a);
+		elements.add(c);
+		elements.add(d);
+		elements.add(Evenement.RETURN);
+		elements.add(e);
+		elements.add(Evenement.RETURN);
+		elements.add(Evenement.RETURN);
+		elements.add(Evenement.RETURN);
+		elements.add(Evenement.RETURN);
+		elements.add(Evenement.END_OF_PROGRAM);
+		elements.add(m);
+		elements.add(b);
+		elements.add(g);
+		elements.add(Evenement.RETURN);
+		elements.add(Evenement.RETURN);
+		elements.add(Evenement.RETURN);
+		elements.add(Evenement.END_OF_PROGRAM);
+		elements.add(m);
+		elements.add(b);
+		elements.add(c);
+		elements.add(f);
+		elements.add(Evenement.RETURN);
+		elements.add(Evenement.RETURN);
+		elements.add(Evenement.RETURN);
+		elements.add(Evenement.RETURN);
+		elements.add(Evenement.END_OF_PROGRAM);
+		
+		Sequitur sequitur = new Sequitur(elements);
+		Grammaire grammaire = sequitur.executerSequitur();
+		assertEquals(4,grammaire.getNbRegles());
+		
+		LinkedList<ElementItf> expected = new LinkedList<ElementItf>();
+		// regle1 = r r
+		expected.add(Evenement.RETURN);
+		expected.add(Evenement.RETURN);
+		Regle regle1 = grammaire.getRegleQuiProduit(expected);
+		
+		// regle2 = M B
+		expected.clear();
+		expected.add(m);
+		expected.add(b);
+		Regle regle2 = grammaire.getRegleQuiProduit(expected);
+		
+		// regle3 = regle1 r
+		expected.clear();
+		expected.add(regle1);
+		expected.add(Evenement.RETURN);
+		Regle regle3 = grammaire.getRegleQuiProduit(expected);
+		
+		// regle4 = x regle2
+		expected.clear();
+		expected.add(regle1);
+		expected.add(Evenement.RETURN);
+		Regle regle4 = grammaire.getRegleQuiProduit(expected);
+		
+		assertNotNull(regle1);
+		assertNotNull(regle2);
+		assertNotNull(regle3);
+		assertNotNull(regle4);
+	}
 }
