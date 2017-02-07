@@ -21,7 +21,7 @@ public class StackTraceTest {
 
 	@Rule
 	public final SystemErrRule systemErrRule = new SystemErrRule().enableLog();
-	   
+
 	private Launcher launcher;
 	private StackTracesProcessor stackTracesProcessor;
 
@@ -37,9 +37,10 @@ public class StackTraceTest {
 		exit.expectSystemExitWithStatus(0);
 		try {
 			launcher.run(new String[] { "-i", "src/test/resources/TestProject2", "--output-type", "nooutput",
-			"--no-copy-resources" });
+					"--no-copy-resources" });
 		} finally {
-			assertEquals("Erreur: Il ne doit y avoir qu'une seule méthode main.\n",systemErrRule.getLogWithNormalizedLineSeparator());
+			assertEquals("Erreur: Il ne doit y avoir qu'une seule méthode main.\n",
+					systemErrRule.getLogWithNormalizedLineSeparator());
 		}
 	}
 
@@ -48,29 +49,46 @@ public class StackTraceTest {
 		exit.expectSystemExitWithStatus(0);
 		try {
 			launcher.run(new String[] { "-i", "src/test/resources/TestProject3", "--output-type", "nooutput",
-				"--no-copy-resources" });
+					"--no-copy-resources" });
 		} finally {
-			assertEquals("Erreur: Il ne doit y avoir qu'une seule méthode main.\n",systemErrRule.getLogWithNormalizedLineSeparator());
+			assertEquals("Erreur: Il ne doit y avoir qu'une seule méthode main.\n",
+					systemErrRule.getLogWithNormalizedLineSeparator());
 		}
 	}
 
 	@Test
 	public void testStackTrace() {
+		launcher.run(new String[] { "-i", "src/test/resources/TestProject", "--output-type", "nooutput",
+				"--no-copy-resources" });
+		List<ElementItf> l = stackTracesProcessor.getStackTrace();
+		String expected[] = new String[] { "pathimpact.Test#main(java.lang.String[])", "pathimpact.Test#m()",
+				"pathimpact.Test#m3()", "r", "r", "r", "x", "pathimpact.Test#main(java.lang.String[])",
+				"pathimpact.Test#m2()", "pathimpact.Test#m4()", "r", "r", "r", "x",
+				"pathimpact.Test#main(java.lang.String[])", "pathimpact.Test#m5()", "r", "r", "x" };
+		int i = 0;
+		for (ElementItf e : l) {
+			assertEquals(expected[i], e.getNom());
+			i = i + 1;
+		}
+	}
+
+	@Test
+	public void testStackTraceRecursivite() {
 		launcher.run(new String[] { 
-				"-i", "src/test/resources/TestProject",
+				"-i", "src/test/resources/TestProject4",
 				"--output-type", "nooutput",
 				"--no-copy-resources"
 		});
 		List<ElementItf> l = stackTracesProcessor.getStackTrace();
 		String expected[] = new String[] {
-			"pathimpact.Test#main(java.lang.String[])","pathimpact.Test#m()","pathimpact.Test#m3()","r","r","r","x",
-			"pathimpact.Test#main(java.lang.String[])","pathimpact.Test#m2()","pathimpact.Test#m4()","r","r","r","x",
-			"pathimpact.Test#main(java.lang.String[])","pathimpact.Test#m5()","r","r","x"
+			"pathimpact.Test#main(java.lang.String[])","pathimpact.Test#m1()","pathimpact.Test#m1()","r","r","r","x",
+			"pathimpact.Test#main(java.lang.String[])","pathimpact.Test#m()","pathimpact.Test#m2()","pathimpact.Test#m3()","pathimpact.Test#m()","r","r","r","r","r","x",
+			"pathimpact.Test#main(java.lang.String[])","pathimpact.Test#m()","pathimpact.Test#m4()","r","r","r","x"
 		};
 		int i = 0;
 		for (ElementItf e : l) {
-			assertEquals(expected[i],e.getNom());
-			i = i+1;
+			assertEquals(expected[i], e.getNom());
+			i = i + 1;
 		}
 	}
 }
