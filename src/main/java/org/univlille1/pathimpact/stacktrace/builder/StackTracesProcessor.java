@@ -15,6 +15,7 @@ import spoon.reflect.code.CtInvocation;
 import spoon.reflect.declaration.CtExecutable;
 import spoon.reflect.declaration.CtMethod;
 import spoon.reflect.declaration.CtParameter;
+import spoon.reflect.declaration.CtType;
 import spoon.reflect.declaration.ModifierKind;
 import spoon.reflect.reference.CtArrayTypeReference;
 import spoon.reflect.reference.CtTypeReference;
@@ -29,11 +30,14 @@ public class StackTracesProcessor extends AbstractProcessor<CtMethod<?>> {
 
 	private Map<String, Methode> mapMethodes;
 
+	private Map<CtMethod<?>,List<CtMethod<?>>> implementations;
+	
 	public StackTracesProcessor() {
 		linksBetweenMethods = new HashMap<CtMethod<?>, List<CtMethod<?>>>();
 		mainMethods = new LinkedList<CtMethod<?>>();
 		stackTrace = new LinkedList<ElementItf>();
 		mapMethodes = new HashMap<String, Methode>();
+		implementations = new HashMap<CtMethod<?>,List<CtMethod<?>>>();
 	}
 
 	@Override
@@ -69,7 +73,45 @@ public class StackTracesProcessor extends AbstractProcessor<CtMethod<?>> {
 					l = new LinkedList<CtMethod<?>>();
 					linksBetweenMethods.put(method, l);
 				}
-				l.add(m);
+				// On appelle une méthode abstraite, il faut retrouver toutes ses implémentations
+				if (m.getBody() == null) {
+					if (implementations.containsKey(m)) {
+						// Si on les a déjà déterminées, inutile de rechercher à nouveau
+						l.addAll(implementations.get(m));
+					} else {
+						// Sinon, il faut parcourir tout le projet pour les retrouver
+						CtType<?> t = m.getParent(CtType.class);
+						List<CtTypeReference<?>> typeReferences=  new LinkedList<CtTypeReference<?>>();
+						// Ce tableau de paramètres sera utilisé par getMethod(name,parameterTypes)
+						CtTypeReference<?> tabParamReferences[] = new CtTypeReference[]{};
+						if (m.getParameters() != null) {
+							for (CtParameter<?> param : m.getParameters()) {
+								typeReferences.add(param.getType());
+							}
+							tabParamReferences = typeReferences.toArray(tabParamReferences);
+						}
+						// Toutes les classes du projet
+						List<CtType<?>> classes = getFactory().Class().getAll();
+						// La liste methods permettra de récupérer les implémentations pour la Map implementations (éviter de recalculer)
+						List<CtMethod<?>> methods = new LinkedList<CtMethod<?>>();
+						implementations.put(m,methods);
+						// On parcourt toutes les classes du projet à la recherche des implémentations de la méthode abstraite
+						for (CtType<?> type : classes) {
+							// La classe est un sous-type de la classe ou de l'interface de la méthode donc on peut sûrement retrouver l'implémentation de la méthode
+							if (type.isSubtypeOf(t.getReference())) {
+								CtMethod<?> met = type.getMethod(m.getSimpleName(),tabParamReferences);
+								// Si on en trouve une, on l'ajoute à la liste de implementations et à la liste de linksBetweenMethods
+								if ((met != null) && (met.getBody() != null)) {					
+									l.add(met);
+									methods.add(met);
+								}
+							}
+						}
+					}
+				} else {
+					// Si ce n'est pas une méthode abstraite, on l'ajoute uniquement à la liste de linksBetweenMethods : tout va bien !
+					l.add(m);
+				}
 			}
 		}
 	}

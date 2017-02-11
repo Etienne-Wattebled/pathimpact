@@ -91,4 +91,30 @@ public class StackTraceTest {
 			i = i + 1;
 		}
 	}
+	
+	@Test
+	public void testStackTraceAbstractMethods() {
+		launcher.run(new String[] { 
+				"-i", "src/test/resources/TestProject5",
+				"--output-type", "nooutput",
+				"--no-copy-resources"
+		});
+		List<ElementItf> l = stackTracesProcessor.getStackTrace();
+		String expected[] = new String[] {
+				"pathimpact.Test#main(java.lang.String[])","pathimpact.B#ma()","r","r","x",
+				"pathimpact.Test#main(java.lang.String[])","pathimpact.D#ma()","r","r","x",
+				"pathimpact.Test#main(java.lang.String[])","pathimpact.E#ma()","r","r","x",
+				"pathimpact.Test#main(java.lang.String[])","pathimpact.B#mi()","r","r","x",
+				"pathimpact.Test#main(java.lang.String[])","pathimpact.D#mi()","r","r","x",
+				"pathimpact.Test#main(java.lang.String[])","pathimpact.E#mi()","r","r","x",
+				"pathimpact.Test#main(java.lang.String[])","pathimpact.B#ma()","r","r","x",
+				"pathimpact.Test#main(java.lang.String[])","pathimpact.D#ma()","r","r","x",
+				"pathimpact.Test#main(java.lang.String[])","pathimpact.E#ma()","r","r","x",
+		};
+		int i = 0;
+		for (ElementItf e : l) {
+			assertEquals(expected[i], e.getNom());
+			i = i + 1;
+		}
+	}
 }
