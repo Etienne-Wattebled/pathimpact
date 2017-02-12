@@ -1,4 +1,4 @@
-PathImpact - Analyseur d'impacts
+PATHIMPACT - ANALYSEUR D'IMPACTS
 
 But :
 Si une méthode est modifiée, on souhaite pouvoir lister les méthodes susceptibles d'être impactées.
@@ -16,5 +16,5 @@ Structure d'une stacktrace (une stacktrace est une liste ElementItf) :
 
 Classes importantes :
 - StackTracesProcessor : Processor Spoon permettant de déterminer les stacktraces.
-- Grammaire : Classe permettant de représenter des règles grammaticales. Grammaire est utilisée par Sequitur.
+- Grammaire : Classe permettant de représenter des règles grammaticales. Grammaire est utilisée par Sequitur. Cette classe possède une classe interne Regle qui permet de représenter une règle. La classe Regle hérite de AbstractElement.
 - Sequitur : Algorithme de compression utilisant Grammaire.
